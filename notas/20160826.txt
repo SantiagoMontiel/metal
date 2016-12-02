@@ -1,0 +1,142 @@
+Table of Contents
+─────────────────
+
+1 Reunión del viernes 26, en el starbucks
+2 Preguntas
+3 Ideas
+4 Multithreading:
+5 Filtrando el enunciado
+.. 5.1 Server
+.. 5.2 Cliente
+6 Comentarios de clase, miercoles 31
+7 Comentarios de clase, miercoles 7
+
+
+1 Reunión del viernes 26, en el starbucks
+═════════════════════════════════════════
+
+  Santi, Santi, Fran, Flor
+
+
+2 Preguntas
+═══════════
+
+  1. Niveles de log y qué cae en cada categoría.
+
+  2. Como se corta un mensaje? Podemos usar un caracter o varios
+     "especiales" Podríamos tener un id de mensaje Podríamos tener el
+     tamaño total del mensaje (si es que está partido en varios)
+     Podríamos tener un EOM (End of Message) que indique el final y lea
+     hasta eso (i.e. \0). -RTA: Lo definimos nosotros, mas o menos ya esta.
+
+     Si el mensaje nunca se parte (nunca es más grande que el buffer) no
+     hace falta nada de esto, corta donde corta y se termina.
+
+  3. Timestamp? Cómo asegurar que los mensajes se envían al cliente en
+     el orden en el que se recibieron? La alternativa sería confiar en
+     que nuestro FIFO está bien ordenado en el servidor.
+  4. Podrían aparecer nuevos usuarios en el medio de la ejecución? Hay
+     que releer el archivo? -RTA: NO.
+
+     La pregunta viene de la mano de la lista de usuarios que se envía
+     al cliente. Si no peude haber nuevos usuarios la lista se envía una
+     vez y se considera invariable (no se la pide) De la otra forma se
+     la envía cada vez que el usuario va a enviar un mensaje
+
+     La primer variante está considearndo "hay x jugadores en la partida
+     y no se agregan nuevos" La segunda admite jugadores ingresando a
+     mitad de la partida
+
+  5. En el menu de clientes que opciones tiene que ser un thread?
+
+
+3 Ideas
+═══════
+
+  Podemos partir del server/cliente que ya tenemos y empezar a
+  construir:
+  1. Mandar más de 1 mensaje
+  2. Mandar mensajes de longitud aleatoria
+  3. Construir un tipo de dato Mensaje. Nos va a servir con cosas como
+     mensajes largos, podemos tener ids de mensaje, o la longitud total
+     incluidas dentro del struct, cosa de saber cuando un mensaje, que
+     es más grande que el buffer de comunicación con el socket, se
+     termina de enviar.
+  4. Multithreading aunque sólo sea con 1 cliente local.
+  5. 
+
+  6. Hay que pensar en la cola de usuarios que quieren acceder a la cola
+     de mensajes del servidor. (Priorizar por llegada, por ejemplo)
+  7. 
+
+
+4 Multithreading:
+═════════════════
+
+  Los threads que son prácticamente obligados se me ocurren 1 thread
+  para el listen() del servidor. 1 thread x cada cliente para el queue
+  de mensajes del servidor 1
+
+
+5 Filtrando el enunciado
+════════════════════════
+
+5.1 Server
+──────────
+
+  1. El archivo de usuarios tiene todos los usuarios del servidor, SON
+     FIJOS (durante 1 ejecución)
+  2. La cola de mensajes debe ser única (luega se la filtra por
+     destinatario). Obligatorio.
+  3. Validar usuarios cuando hay un accept() inmediatamente.
+  4. Enviar lista de usuarios
+
+  El servidor tiene mensajes "especiales" que el cliente podría saber (o
+  no?) reconocer:
+  • La lista de los usuarios
+  • El pedido de autenticación
+  • "Estás conectado"
+
+
+5.2 Cliente
+───────────
+
+  1. Primer mensaje que se manda es la autenticación
+  2. La autenticación se hace manualmente (se ingresa usuario y
+     contraseña cada vez que el servidor lo pida)
+  3. Desconectar NO CIERRA EL CLIENTE. Todavía se vuelve al menú y se
+     puede reconectar al servidor.
+  4. El envio de mensaje se hace mediante un menú interactivo donde se
+     lista cada usuario (el server nos manda la lista).
+  5. Se envía UN MENSAJE a UN USUARIO por vez, luego se vuelve al menú
+     principal.
+  6. Recibir: sólo se recibne los mensajes *CUANDO EL CLIENTE SE LOS
+     PIDE AL SERVIDOR*
+  7. Lorem Ipsum: hablaro nde 3k de mensajes cada 100ms. Para poner una
+     idea.
+
+6 Comentarios de clase, miercoles 31
+════════════════════════════════════
+    - No hay maximo de cliemtes conectados, el juego debe soportar maximo 6 jugadores conectados.
+    (Lo van a probar con 4 usuarios)
+    - Log:  Cliente debe tener Log.
+            Registrar envio de mensajes entre usuarios.
+            Fijar el largo de guardado del contenido de los mensajes que se enviaron. (En caso de ser muy largo el msj, sigue...)
+            Poder detectar problemas ej: ingreso de usuario con contrasena erronea, o usuario inexistente, fallo de conexiones.
+    - Unica lista, post lectura de  mensajes se borran, salvando los que son to everyone.
+
+
+
+7 Comentarios de clase, miercoles 7
+════════════════════════════════════
+    -Frecuencia: si te dice 10 entonces serán 10 mensajes por segundo.
+     Ellos lo van a probar con 200bytes de long por mje, o mas.
+     Se establece la frecuencia y la cantidad de mensajes que se van a enviar.
+     ej: 1-10 van a salir 10 mensajes, uno por segundo.
+
+    -Para saber que te estas conectando al servidor correcto, para cada cliente
+     al conectarse se debe mostrar la lista de usuarios disponibles.
+     Solo en esa instancia se muestra la lista, no hace falta mostrarla cada vez
+     que decide enviar un mje.
+
+    -Loguear en e logger del servidor como fue que se cerró.
